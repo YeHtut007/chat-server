@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8"><title>WS Test (JWT)</title>
+<input id="conv" placeholder="conversation UUID" style="width:520px" value="11111111-1111-1111-1111-111111111111"><br>
+<input id="content" placeholder="message" style="width:520px"><br>
+<input id="token" placeholder="paste JWT here" style="width:520px"><br>
+<button id="connect">Connect</button>
+<button id="send">Send</button>
+<pre id="log"></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+  let client, sub;
+  const log = (...a)=>document.getElementById('log').textContent += a.join(' ')+'\n';
+
+  document.getElementById('connect').onclick = () => {
+    const sock = new SockJS('/ws');
+    client = Stomp.over(sock);
+    client.debug = () => {};
+    const conv = document.getElementById('conv').value.trim();
+    const t = document.getElementById('token').value.trim();
+    const headers = { Authorization: 'Bearer ' + t }; // REQUIRED now
+
+    client.connect(headers, () => {
+      log('connected');
+      sub = client.subscribe('/topic/conversations.'+conv, m => log('recv:', m.body));
+    }, e => log('error', e));
+  };
+
+  document.getElementById('send').onclick = () => {
+    const conv = document.getElementById('conv').value.trim();
+    const content = document.getElementById('content').value.trim();
+    client.send('/app/send', {}, JSON.stringify({conversationId: conv, sender: "", content}));
+    log('sent:', content);
+  };
+</script>

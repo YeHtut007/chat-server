@@ -1,0 +1,12 @@
+server:
+  port: ${PORT:8080}    # works locally and on Render
+  forward-headers-strategy: framework  # trust proxy headers on Render
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-secret-change-me}
+    expirationMinutes: 43200
+
+spring:
+  profiles:
+    active: dev  # default local profile
