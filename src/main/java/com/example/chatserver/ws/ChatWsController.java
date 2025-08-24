@@ -1,35 +1,28 @@
 package com.example.chatserver.ws;
 
 import com.example.chatserver.ws.dto.ChatMessage;
-import com.example.chatserver.chat.MessageEntity;
-import com.example.chatserver.chat.MessageRepo;
+import com.example.chatserver.ws.dto.ChatMessageOut;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
-import java.time.Instant;
 
 @Controller
 public class ChatWsController {
 
-  private final SimpMessagingTemplate template;
-  private final MessageRepo messages;
+  private final SimpMessagingTemplate broker;
 
-  public ChatWsController(SimpMessagingTemplate template, MessageRepo messages) {
-    this.template = template;
-    this.messages = messages;
+  public ChatWsController(SimpMessagingTemplate broker) {
+    this.broker = broker;
   }
 
   @MessageMapping("/send")
-  public void broadcast(ChatMessage msg, Principal principal) {
-    String sender = principal.getName(); // from JWT
-    var payload = new ChatMessage(msg.conversationId(), sender, msg.content());
-
-    // persist
-    messages.save(new MessageEntity(msg.conversationId(), sender, msg.content(), Instant.now()));
-
-    // fan-out
-    template.convertAndSend("/topic/conversations." + msg.conversationId(), payload);
+  public void broadcast(ChatMessage in, Principal principal) {
+    var out = new ChatMessageOut(in.conversationId(), principal.getName(), in.content(), java.time.Instant.now());
+    broker.convertAndSend("/topic/chat." + in.conversationId(), out);
   }
+
+  
 }
