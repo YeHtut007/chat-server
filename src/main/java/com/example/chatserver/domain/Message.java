@@ -6,8 +6,9 @@ import java.util.UUID;
 
 @Entity @Table(name = "messages")
 public class Message {
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+	@Id
+	  @GeneratedValue          // Hibernate 6 will generate a UUID for a UUID-typed id
+	  private java.util.UUID id;
 
   @Column(name="conversation_id", nullable=false)
   private UUID conversationId;
@@ -30,7 +31,7 @@ public class Message {
     this.conversationId = convId; this.senderUsername = senderUsername; this.content = content;
   }
 
-  public Long getId() { return id; }
+  public UUID getId() { return id; }
   public UUID getConversationId() { return conversationId; }
   public void setConversationId(UUID conversationId) { this.conversationId = conversationId; }
   public String getSenderUsername() { return senderUsername; }

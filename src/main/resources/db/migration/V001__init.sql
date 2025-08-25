@@ -22,7 +22,7 @@ create table if not exists conversation_member (
 
 -- Messages (keep simple: store sender username)
 create table if not exists messages (
-  id bigserial primary key,
+  id uuid primary key,
   conversation_id uuid not null references conversations(id) on delete cascade,
   sender_username text not null,
   content text not null,

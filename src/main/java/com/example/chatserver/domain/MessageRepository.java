@@ -9,18 +9,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface MessageRepository extends JpaRepository<Message, Long> {
-  // you already had these:
+public interface MessageRepository extends JpaRepository<Message, UUID> {
+  // history endpoints
   List<Message> findTop100ByConversationIdOrderBySentAtDesc(UUID conversationId);
   List<Message> findByConversationIdAndSentAtAfterOrderBySentAtAsc(UUID conversationId, Instant after);
 
-  // needed by your services:
+  // services expect these:
   Optional<Message> findTopByConversationIdOrderBySentAtDesc(UUID conversationId);
-
   long countByConversationIdAndSentAtAfter(UUID conversationId, Instant after);
 
-  Page<Message> findByConversationIdOrderBySentAtDesc(UUID conversationId, Pageable pageable);
+  Page<Message> findByConversationIdOrderBySentAtDesc(UUID conversationId, org.springframework.data.domain.Pageable pageable);
+  Page<Message> findByConversationIdAndSentAtBeforeOrderBySentAtDesc(UUID conversationId, Instant before, org.springframework.data.domain.Pageable pageable);
 
-  Page<Message> findByConversationIdAndSentAtBeforeOrderBySentAtDesc(
-      UUID conversationId, Instant before, Pageable pageable);
 }
