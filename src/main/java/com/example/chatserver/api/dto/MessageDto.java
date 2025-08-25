@@ -4,9 +4,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record MessageDto(
-    UUID id,
-    UUID conversationId,
-    String sender,   // map from entity.getSenderUsername()
-    String content,
-    Instant sentAt
-) {}
+	    Long id,               // <-- was UUID
+	    UUID conversationId,
+	    String sender,
+	    String content,
+	    Instant sentAt
+	) {}
+

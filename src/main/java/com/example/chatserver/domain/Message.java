@@ -4,11 +4,12 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
-@Entity @Table(name = "messages")
+@Entity
+@Table(name = "messages")
 public class Message {
-	@Id
-	  @GeneratedValue          // Hibernate 6 will generate a UUID for a UUID-typed id
-	  private java.util.UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY) // matches BIGSERIAL
+  private Long id;
 
   @Column(name="conversation_id", nullable=false)
   private UUID conversationId;
@@ -18,20 +19,16 @@ public class Message {
 
   @Column(nullable=false) private String content;
   @Column(nullable=false) private String type = "text";
+  @Column(name="sent_at", nullable=false) private Instant sentAt;
 
-  @Column(name="sent_at", nullable=false)
-  private Instant sentAt;
-
-  @PrePersist void prePersist() {
-    if (sentAt == null) sentAt = Instant.now();
-  }
+  @PrePersist void prePersist() { if (sentAt == null) sentAt = Instant.now(); }
 
   public Message() {}
   public Message(UUID convId, String senderUsername, String content) {
     this.conversationId = convId; this.senderUsername = senderUsername; this.content = content;
   }
 
-  public UUID getId() { return id; }
+  public Long getId() { return id; }                 // <-- Long now
   public UUID getConversationId() { return conversationId; }
   public void setConversationId(UUID conversationId) { this.conversationId = conversationId; }
   public String getSenderUsername() { return senderUsername; }
@@ -43,3 +40,4 @@ public class Message {
   public Instant getSentAt() { return sentAt; }
   public void setSentAt(Instant sentAt) { this.sentAt = sentAt; }
 }
+
