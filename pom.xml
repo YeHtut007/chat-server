@@ -8,82 +8,97 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.3.2</version>
-    <relativePath/> <!-- lookup parent from repository -->
+    <relativePath/>
   </parent>
 
   <groupId>com.example</groupId>
   <artifactId>chat-server</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>chat-server</name>
-  <description>Chat app backend with Spring Boot</description>
+  <description>Chat server (Spring Boot, STOMP over WebSocket, JWT, Postgres)</description>
+  <packaging>jar</packaging>
 
   <properties>
     <java.version>21</java.version>
+    <maven.compiler.release>21</maven.compiler.release>
+
+    <!-- Use a Flyway version that supports PostgreSQL 17 and add PG module -->
+    <flyway.version>11.10.0</flyway.version>
+
+    <!-- JJWT -->
+    <jjwt.version>0.11.5</jjwt.version>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
-    <!-- Spring Boot core starters -->
+    <!-- Web + JSON -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-validation</artifactId>
-    </dependency>
+
+    <!-- WebSocket/STOMP (includes spring-messaging) -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-websocket</artifactId>
     </dependency>
 
-    <!-- JWT -->
+    <!-- Security -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
+    <!-- Bean validation (for @Valid DTOs) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- JPA + Postgres -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- Flyway core + PostgreSQL module (needed since Flyway 10+) -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+      <!-- version comes from flyway.version property -->
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+      <!-- version comes from flyway.version property -->
+    </dependency>
+
+    <!-- JWT (JJWT) -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
-      <version>0.11.5</version>
+      <version>${jjwt.version}</version>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-impl</artifactId>
-      <version>0.11.5</version>
+      <version>${jjwt.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-jackson</artifactId>
-      <version>0.11.5</version>
+      <version>${jjwt.version}</version>
       <scope>runtime</scope>
     </dependency>
-    
-    
-	    <dependency>
-	  <groupId>org.springframework.boot</groupId>
-	  <artifactId>spring-boot-starter-data-jpa</artifactId>
-	</dependency>
-	<dependency>
-	  <groupId>com.h2database</groupId>
-	  <artifactId>h2</artifactId>
-	  <scope>runtime</scope>
-	</dependency>
-	
-	<!-- PostgreSQL JDBC driver -->
-	<dependency>
-	  <groupId>org.postgresql</groupId>
-	  <artifactId>postgresql</artifactId>
-	  <scope>runtime</scope>
-	</dependency>
-	
-	<dependency>
-	  <groupId>org.flywaydb</groupId>
-	  <artifactId>flyway-core</artifactId>
-	</dependency>
 
-
-    <!-- Test -->
+    <!-- Tests -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -91,19 +106,27 @@
     </dependency>
   </dependencies>
 
+  <dependencyManagement>
+    <dependencies>
+      <!-- Override Flyway version used by Spring Boot -->
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-core</artifactId>
+        <version>${flyway.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-database-postgresql</artifactId>
+        <version>${flyway.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <build>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
-        <configuration>
-          <release>${java.version}</release>
-        </configuration>
       </plugin>
     </plugins>
   </build>
