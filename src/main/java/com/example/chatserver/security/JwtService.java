@@ -44,6 +44,15 @@ public class JwtService {
     }
     this.key = k;
   }
+  public boolean isValid(String token) {
+	  try {
+	    Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+	    return true;
+	  } catch (JwtException e) {
+	    return false;
+	  }
+	}
+
 
   public String generate(String username) {
     var now = Instant.now();

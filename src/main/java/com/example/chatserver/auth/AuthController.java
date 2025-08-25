@@ -37,9 +37,20 @@ public class AuthController {
   }
 
   @GetMapping("/me")
-  public ResponseEntity<?> me(@RequestHeader("Authorization") String auth) {
-    var username = jwt.extractUsername(auth.replace("Bearer ", ""));
-    var user = repo.findByUsername(username).orElseThrow();
+  public ResponseEntity<?> me(@RequestHeader(value = "Authorization", required = false) String auth) {
+    if (auth == null || !auth.startsWith("Bearer ")) {
+      return ResponseEntity.status(401).body("missing Authorization: Bearer <token>");
+    }
+    var token = auth.substring("Bearer ".length());
+    if (!jwt.isValid(token)) {
+      return ResponseEntity.status(401).body("invalid token");
+    }
+    var username = jwt.extractUsername(token);
+    var user = repo.findByUsername(username).orElse(null);
+    if (user == null) {
+      return ResponseEntity.status(401).body("user not found");
+    }
     return ResponseEntity.ok(new UserDto(user.id(), user.username(), user.displayName()));
   }
+
 }
