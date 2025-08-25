@@ -1,3 +1,4 @@
+// src/main/java/com/example/chatserver/service/MembershipService.java
 package com.example.chatserver.service;
 
 import com.example.chatserver.repo.UserAccountRepository;
@@ -16,7 +17,11 @@ public class MembershipService {
   }
 
   public boolean isMember(String username, UUID conversationId) {
-    var user = users.findByUsername(username).orElse(null);
-    return user != null && members.existsByConversationIdAndUserId(conversationId, user.getId());
+    String uname = username == null ? null : username.trim().toLowerCase(); // normalize
+    var user = (uname == null) ? null : users.findByUsernameIgnoreCase(uname).orElse(null);
+    boolean ok = user != null && members.existsByConversationIdAndUserId(conversationId, user.getId());
+    System.out.printf("[membership] username=%s (norm=%s) dbUserId=%s conv=%s -> %s%n",
+        username, uname, user != null ? user.getId() : null, conversationId, ok);
+    return ok;
   }
 }

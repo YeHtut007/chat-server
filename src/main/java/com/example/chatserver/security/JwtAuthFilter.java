@@ -17,20 +17,13 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
+  public JwtAuthFilter(JwtService jwtService) { this.jwtService = jwtService; }
 
-  public JwtAuthFilter(JwtService jwtService) {
-    this.jwtService = jwtService;
+  @Override
+  protected boolean shouldNotFilter(jakarta.servlet.http.HttpServletRequest request) {
+    String p = request.getServletPath();
+    return p.startsWith("/api/auth/") || p.startsWith("/ws-native") || p.startsWith("/ws");
   }
-  
-//in JwtAuthFilter (extends OncePerRequestFilter)
-@Override
-protected boolean shouldNotFilter(jakarta.servlet.http.HttpServletRequest request) {
- String p = request.getServletPath();
- return p.startsWith("/api/auth/")          // auth endpoints
-     || p.startsWith("/ws-native")          // WS handshake
-     || p.startsWith("/ws");                // SockJS endpoints
-}
-
 
   @Override
   protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
@@ -40,10 +33,13 @@ protected boolean shouldNotFilter(jakarta.servlet.http.HttpServletRequest reques
       String token = auth.substring(7);
       try {
         String username = jwtService.extractUsername(token);
-        var principal = User.withUsername(username).password("N/A").authorities("USER").build();
-        var authToken = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+        if (username != null) {
+          username = username.trim().toLowerCase(); // normalize
+          var principal = User.withUsername(username).password("N/A").authorities("USER").build();
+          var authToken = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+          authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+          SecurityContextHolder.getContext().setAuthentication(authToken);
+        }
       } catch (Exception ignored) {}
     }
     chain.doFilter(req, res);

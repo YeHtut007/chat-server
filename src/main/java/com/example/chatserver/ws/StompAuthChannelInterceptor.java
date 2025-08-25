@@ -23,20 +23,18 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
     StompHeaderAccessor acc = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
     if (acc != null && StompCommand.CONNECT.equals(acc.getCommand())) {
-    	  String auth = acc.getFirstNativeHeader("Authorization");
-    	  if (auth == null || !auth.startsWith("Bearer ")) {
-    	    throw new IllegalArgumentException("Missing Authorization header");
-    	  }
-    	  String token = auth.substring(7);
-    	  if (!jwt.isValid(token)) {
-    	    throw new IllegalArgumentException("Invalid JWT");
-    	  }
-    	  String username = jwt.extractUsername(token);
-    	  var authn = new UsernamePasswordAuthenticationToken(
-    	      username, null, List.of(new SimpleGrantedAuthority("USER")));
-    	  acc.setUser(authn);
-    	}
+      String auth = acc.getFirstNativeHeader("Authorization");
+      if (auth == null || !auth.startsWith("Bearer "))
+        throw new IllegalArgumentException("Missing Authorization header");
 
+      String username = jwt.extractUsername(auth.substring(7));
+      if (username == null) throw new IllegalArgumentException("Invalid JWT");
+      username = username.trim().toLowerCase(); // normalize
+
+      var authn = new UsernamePasswordAuthenticationToken(
+          username, null, List.of(new SimpleGrantedAuthority("USER")));
+      acc.setUser(authn);
+    }
     return message;
   }
 }
