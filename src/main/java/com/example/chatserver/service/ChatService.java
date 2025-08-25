@@ -2,7 +2,8 @@ package com.example.chatserver.service;
 
 import com.example.chatserver.api.dto.MessageDto;
 import com.example.chatserver.domain.Message;
-import com.example.chatserver.repo.MessageRepository;
+import com.example.chatserver.domain.MessageRepository;  // <- use this everywhere
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 

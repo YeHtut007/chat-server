@@ -4,6 +4,7 @@ import com.example.chatserver.api.dto.ConversationSummary;
 import com.example.chatserver.domain.ConversationMember;
 import com.example.chatserver.repo.*;
 import org.springframework.stereotype.Service;
+import com.example.chatserver.domain.MessageRepository;  // <- use this everywhere
 
 import java.util.List;
 
