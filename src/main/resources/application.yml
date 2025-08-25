@@ -1,12 +1,60 @@
 server:
-  port: ${PORT:8080}    # works locally and on Render
-  forward-headers-strategy: framework  # trust proxy headers on Render
+  port: ${PORT:8080}                  # local 8080; Render provides PORT
+  forward-headers-strategy: framework # trust proxy headers on Render
 
 app:
   jwt:
     secret: ${JWT_SECRET:dev-secret-change-me}
-    expirationMinutes: 43200
+    expirationMinutes: 43200          # 30 days
 
 spring:
   profiles:
-    active: dev  # default local profile
+    default: dev                      # default profile when none is set
+
+  # --- DB config (env-driven; safe local fallbacks) ---
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/chatdb?sslmode=disable}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate              # use Flyway to manage schema
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC              # store/load timestamps as UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false  # ISO-8601 in JSON
+
+logging:
+  level:
+    org.springframework: INFO
+    com.example: INFO
+
+# -------- profile-specific overrides --------
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+logging:
+  level:
+    com.example: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: render
+logging:
+  level:
+    org.springframework: INFO
+    com.example: INFO
