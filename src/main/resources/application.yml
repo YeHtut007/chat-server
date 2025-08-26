@@ -58,3 +58,6 @@ logging:
   level:
     org.springframework: INFO
     com.example: INFO
+app:
+ defaultConversationId: 11111111-1111-1111-1111-111111111111
+
