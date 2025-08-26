@@ -72,12 +72,22 @@ public class AuthController {
     final String uname = req.username().trim().toLowerCase();
     var ua = users.findByUsernameIgnoreCase(uname).orElse(null);
     if (ua == null) return ResponseEntity.status(401).body("invalid credentials");
-    if (ua.getPasswordHash() == null || !encoder.matches(req.password(), ua.getPasswordHash()))
+
+    // DEV-FRIENDLY MIGRATION: if legacy user has no hash, set it now
+    if (ua.getPasswordHash() == null || ua.getPasswordHash().isBlank()) {
+      ua.setPasswordHash(encoder.encode(req.password()));
+      users.save(ua); // persist new hash
+    }
+
+    if (!encoder.matches(req.password(), ua.getPasswordHash())) {
       return ResponseEntity.status(401).body("invalid credentials");
+    }
 
     var token = jwt.generate(ua.getUsername());
-    return ResponseEntity.ok(new LoginResponse(token, new UserDto(ua.getId(), ua.getUsername(), ua.getDisplayName())));
+    return ResponseEntity.ok(new LoginResponse(token,
+        new UserDto(ua.getId(), ua.getUsername(), ua.getDisplayName())));
   }
+
 
   @GetMapping("/me")
   public ResponseEntity<?> me(@RequestHeader(value = "Authorization", required = false) String auth) {
